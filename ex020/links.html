@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Links</title>
+    <style>
+        /*
+        SELETORES PERSONALIZADOS
+        # = id
+        . = class
+        : = pseudoclasses
+        :: = pseudoelementos
+        > = children
+        */
+
+
+        body {
+            font-family: sans-serif;
+        }
+
+        a {
+            color: black;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:visited{
+            color: rgba(109, 9, 9, 0.643);
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: rgb(9, 9, 138);
+        }
+
+        a:active{
+            color: yellow;
+        }
+
+        a::after{
+            content: '[link]' ;
+            text-decoration: none;
+            font-weight: normal;
+            color: darkgray;
+        }
+    </style>
+</head>
+<body>
+    <h1>Personalizando Links</h1>
+    <ul>
+        <li><a href="https://github.com/Joaocerqueira1619" target="_blank"> Repositório do GitHub</a></li>
+        <li><a href="https://www.youtube.com/" target="_blank">Canal do Youtube</a> </li>
+        <li><a href="https://www.youtube.com/" target="_blank">Site do João</a></li>
+    </ul>
+</body>
+</html>

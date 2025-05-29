@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel da Marcenaria</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .btn-novo {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn-novo:hover {
+      background-color: #2980b9;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 20px;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 300px;
+      position: relative;
+    }
+
+    .card h2 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+      color: #333;
+    }
+
+    .card p {
+      margin: 6px 0;
+      color: #555;
+    }
+
+    .status {
+      font-weight: bold;
+      padding: 6px 10px;
+      border-radius: 5px;
+      display: inline-block;
+    }
+
+    .producao { background-color: #f1c40f; color: white; }
+    .entregue  { background-color: #2ecc71; color: white; }
+    .atrasado  { background-color: #e74c3c; color: white; }
+
+    .card button {
+      margin-top: 10px;
+      margin-right: 5px;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .edit-btn {
+      background-color: #2980b9;
+      color: white;
+    }
+
+    .delete-btn {
+      background-color: #c0392b;
+      color: white;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .modal-content input,
+    .modal-content select {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+
+    .modal-content button {
+      width: 100%;
+      padding: 10px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .close-btn {
+      background: #e74c3c;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Painel da Marcenaria</h1>
+    <button class="btn-novo" onclick="abrirFormulario()">+ Novo Pedido</button>
+  </header>
+
+  <div class="container" id="lista-pedidos">
+    <!-- Cards vão aqui -->
+  </div>
+
+  <!-- Formulário Modal -->
+  <div class="modal" id="formulario">
+    <div class="modal-content">
+      <h2>Novo Pedido</h2>
+      <input type="text" id="cliente" placeholder="Nome do cliente">
+      <input type="text" id="numero" placeholder="Número do pedido">
+      <input type="number" id="pecas" placeholder="Quantidade de peças">
+      <input type="date" id="entrega">
+      <select id="status">
+        <option value="producao">Em Produção</option>
+        <option value="entregue">Entregue</option>
+        <option value="atrasado">Atrasado</option>
+      </select>
+      <button onclick="salvarPedido()">Salvar</button>
+      <button class="close-btn" onclick="fecharFormulario()">Cancelar</button>
+    </div>
+  </div>
+
+  <script>
+    const lista = document.getElementById('lista-pedidos');
+    const formulario = document.getElementById('formulario');
+    let editando = false;
+    let indiceEditando = null;
+
+    function abrirFormulario() {
+      formulario.style.display = 'flex';
+    }
+
+    function fecharFormulario() {
+      formulario.style.display = 'none';
+      limparFormulario();
+      editando = false;
+      indiceEditando = null;
+    }
+
+    function limparFormulario() {
+      document.getElementById('cliente').value = '';
+      document.getElementById('numero').value = '';
+      document.getElementById('pecas').value = '';
+      document.getElementById('entrega').value = '';
+      document.getElementById('status').value = 'producao';
+    }
+
+    function salvarPedido() {
+      const cliente = document.getElementById('cliente').value;
+      const numero = document.getElementById('numero').value;
+      const pecas = document.getElementById('pecas').value;
+      const entrega = document.getElementById('entrega').value;
+      const status = document.getElementById('status').value;
+
+      if (!cliente || !numero || !pecas || !entrega) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      const pedido = { cliente, numero, pecas, entrega, status };
+      const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
+
+      if (editando) {
+        pedidos[indiceEditando] = pedido;
+      } else {
+        pedidos.push(pedido);
+      }
+
+      localStorage.setItem('pedidos', JSON.stringify(pedidos));
+      fecharFormulario();
+      carregarPedidos();
+    }
+
+    function carregarPedidos() {
+      lista.innerHTML = '';
+      const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
+
+      pedidos.forEach((p, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h2>${p.cliente} - Pedido #${p.numero}</h2>
+          <p>Peças: ${p.pecas}</p>
+          <p>Entrega: ${p.entrega}</p>
+          <p class="status ${p.status}">${formatarStatus(p.status)}</p>
+          <button class="edit-btn" onclick="editarPedido(${index})">Editar</button>
+          <button class="delete-btn" onclick="excluirPedido(${index})">Excluir</button>
+        `;
+        lista.appendChild(card);
+      });
+    }
+
+    function editarPedido(index) {
+      const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
+      const p = pedidos[index];
+
+      document.getElementById('cliente').value = p.cliente;
+      document.getElementById('numero').value = p.numero;
+      document.getElementById('pecas').value = p.pecas;
+      document.getElementById('entrega').value = p.entrega;
+      document.getElementById('status').value = p.status;
+
+      editando = true;
+      indiceEditando = index;
+      abrirFormulario();
+    }
+
+    function excluirPedido(index) {
+      if (!confirm("Deseja realmente excluir este pedido?")) return;
+      const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
+      pedidos.splice(index, 1);
+      localStorage.setItem('pedidos', JSON.stringify(pedidos));
+      carregarPedidos();
+    }
+
+    function formatarStatus(status) {
+      switch (status) {
+        case 'producao': return 'Em Produção';
+        case 'entregue': return 'Entregue';
+        case 'atrasado': return 'Atrasado';
+        default: return status;
+      }
+    }
+
+    carregarPedidos();
+  </script>
+</body>
+</html>
